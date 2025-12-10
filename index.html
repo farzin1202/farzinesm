@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TradeMaster Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              background: "var(--background)",
+              foreground: "var(--foreground)",
+              card: "var(--card)",
+              "card-foreground": "var(--card-foreground)",
+              primary: "var(--primary)",
+              "primary-foreground": "var(--primary-foreground)",
+              destructive: "var(--destructive)",
+              "destructive-foreground": "var(--destructive-foreground)",
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        --background: 255 255 255;
+        --foreground: 15 23 42;
+        --card: 255 255 255;
+        --card-foreground: 15 23 42;
+        --primary: 15 23 42;
+        --primary-foreground: 248 250 252;
+        --destructive: 239 68 68;
+        --destructive-foreground: 248 250 252;
+      }
+      .dark {
+        --background: 2 6 23;
+        --foreground: 248 250 252;
+        --card: 15 23 42;
+        --card-foreground: 248 250 252;
+        --primary: 248 250 252;
+        --primary-foreground: 15 23 42;
+        --destructive: 127 29 29;
+        --destructive-foreground: 248 250 252;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: rgb(var(--background)); // Tailwind class emulation
+        color: rgb(var(--foreground));
+      }
+      /* Custom Scrollbar for the Grid */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b; 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.559.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1",
+    "@google/genai": "https://esm.sh/@google/genai@^1.32.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
