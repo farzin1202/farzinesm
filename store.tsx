@@ -1,11 +1,11 @@
 
-import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AppState, AppAction, Trade, Strategy, MonthData, User } from './types';
 import { INITIAL_STATE } from './constants';
+import { storageService } from './services/storageService';
 
 // --- Helpers ---
 const generateId = () => Math.random().toString(36).substring(2, 9);
-const STORAGE_KEY = 'tradeMaster_app_state_v1';
 
 // --- Reducer ---
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -197,23 +197,15 @@ const AppContext = createContext<{
 }>({ state: INITIAL_STATE, dispatch: () => null });
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize state from LocalStorage
-  const initializer = (initial: AppState): AppState => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : initial;
-    } catch (e) {
-      console.error("Failed to load state from LocalStorage", e);
-      return initial;
-    }
-  };
+  // Initialize state from Storage Service
+  const [state, dispatch] = useReducer(appReducer, INITIAL_STATE, (initial) => {
+    return storageService.loadState() || initial;
+  });
 
-  const [state, dispatch] = useReducer(appReducer, INITIAL_STATE, initializer);
-
-  // Persistence Effect: Debounced save to LocalStorage
+  // Persistence Effect: Debounced save to storage
   useEffect(() => {
     const handler = setTimeout(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        storageService.saveState(state);
     }, 1000);
     return () => clearTimeout(handler);
   }, [state]);

@@ -6,7 +6,7 @@ import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { TRANSLATIONS } from '../constants';
 import { TradeGrid } from './TradeGrid';
 import { EquityChart } from './EquityChart';
-import { GoogleGenAI } from "@google/genai";
+import { analyzeMonthPerformance } from '../services/aiService';
 
 const Sparkline = ({ data, color }: { data: any[], color: string }) => {
     // If no data, return placeholder to avoid Recharts errors
@@ -58,80 +58,14 @@ export const MonthView: React.FC = () => {
   const handleAIAnalysis = async () => {
     setIsAnalyzing(true);
     try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const analysisText = await analyzeMonthPerformance(strategy, month);
         
-        // Prepare the detailed data structure
-        const tradeData = month.trades.map(t => ({
-            Day: t.date,
-            Pair: t.pair,
-            Direction: t.direction,
-            RR: t.rr,
-            Result: t.result,
-            "Pips": t.pips,
-            "PnL %": t.pnlPercent,
-            "Max %": t.maxExcursionPercent || 0
-        }));
-
-        const prompt = `
-            می‌خواهم نتایج زیر از یک بک‌تست استراتژی معاملاتی را تحلیل کنی. 
-            لطفاً بررسی را کاملاً دقیق، داده‌محور و همراه با نکات کاربردی ارائه بده.
-
-            ### داده‌های بک‌تست:
-            Strategy Name: ${strategy.name}
-            Month: ${month.name}
-            
-            Trade Records (JSON):
-            ${JSON.stringify(tradeData, null, 2)}
-
-            ### وظایف تو:
-            1. تحلیل جامع عملکرد استراتژی
-               - کیفیت کلی استراتژی (خوب/متوسط/ضعیف)
-               - ثبات عملکرد در طول زمان
-               - رفتار استراتژی در دوره‌های صعودی، نزولی و رنج (اگر داده وجود دارد)
-
-            2. ارزیابی ریسک
-               - بررسی نوع درا‌دان (خطرناک یا طبیعی)
-               - نسبت ریسک به ریوارد واقعی
-               - بدترین تریدها و بهترین تریدها (اگر اطلاعات ارائه شده)
-
-            3. تحلیل رفتار معاملاتی
-               - آیا بردهای بزرگ، شکست‌های کوچک را جبران کرده؟
-               - آیا سیستم به چند معامله بزرگ وابسته است؟
-               - آیا تعداد معاملات کافی است یا نمونه‌گیری کم است؟
-
-            4. بررسی نقاط ضعف احتمالی
-               - اورفیت بودن احتمالی
-               - حساسیت به زمان، تایم‌فریم یا ولتیلیتی
-               - مقایسه دوره‌های خوب و بد
-
-            5. پیشنهادهای بهبود
-               - بهبود ورود و خروج
-               - کنترل ریسک
-               - تنظیم پارامترها یا فیلترها
-               - پیشنهاد برای تست مجدد (مثلاً روی دیتای بیشتر یا تایم‌فریم دیگر)
-
-            6. در نهایت یک خلاصهٔ قابل‌استفاده
-               - سطح اطمینان به استراتژی
-               - مناسب برای معاملات واقعی هست یا نه و با چه شرایطی؟
-               - پیشنهادهایی برای اجرای بهتر در لایو
-
-            به تحلیل‌ات ساختار، جزئیات عددی و مثال اضافه کن. اگر داده‌ای ناقص بود، بگو که چه اطلاعاتی برای تحلیل کامل لازم است.
-        `;
-
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
-            contents: prompt,
-            config: {
-                thinkingConfig: { thinkingBudget: 32768 }
-            }
-        });
-
         dispatch({ 
             type: 'UPDATE_MONTH', 
             payload: { 
                 strategyId: strategy.id, 
                 monthId: month.id, 
-                updates: { aiAnalysis: response.text } 
+                updates: { aiAnalysis: analysisText } 
             } 
         });
         setIsAnalysisModalOpen(true);
