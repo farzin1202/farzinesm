@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { MonthData, Strategy } from "../types";
 
@@ -18,9 +19,9 @@ export const analyzeMonthPerformance = async (
     `- Date: ${t.date}, Pair: ${t.pair}, Dir: ${t.direction}, Result: ${t.result}, PnL: ${t.pnlPercent}%, RR: ${t.rr}, Notes: ${t.notes || 'None'}`
   ).join('\n');
 
-  const systemPrompt = `
-    You are an expert Forex Trading Mentor and Hedge Fund Portfolio Manager. 
-    Your goal is to analyze the user's trading journal for a specific month and provide a professional, constructive, and actionable performance review.
+  // User Prompt content
+  const userPrompt = `
+    Analyze the user's trading journal for a specific month and provide a professional, constructive, and actionable performance review.
     
     The output must be in Markdown format.
     The output must be in ${language === 'fa' ? 'Persian (Farsi)' : 'English'}.
@@ -47,10 +48,13 @@ export const analyzeMonthPerformance = async (
   try {
     const ai = new GoogleGenAI({ apiKey });
     
-    // Using gemini-2.5-flash-latest for fast and efficient text analysis
+    // Using gemini-2.0-flash for better stability and performance
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-latest',
-      contents: systemPrompt,
+      model: 'gemini-2.0-flash',
+      contents: userPrompt,
+      config: {
+        systemInstruction: "You are an expert Forex Trading Mentor and Hedge Fund Portfolio Manager.",
+      }
     });
 
     return response.text || (language === 'fa' ? "تحلیلی دریافت نشد." : "No analysis received.");
@@ -58,17 +62,36 @@ export const analyzeMonthPerformance = async (
   } catch (error: any) {
     console.error("AI Service Error:", error);
     
-    let errorMessage = language === 'fa'
-      ? "خطا در برقراری ارتباط با هوش مصنوعی. لطفاً کلید API و اینترنت خود را بررسی کنید."
-      : "Error connecting to AI Service. Please check your API Key and internet connection.";
+    const errString = error.toString().toLowerCase();
 
-    // Simple error categorization
-    if (error.message?.includes('403') || error.message?.includes('key')) {
-        errorMessage = language === 'fa' 
-            ? "خطا: کلید API نامعتبر است." 
-            : "Error: Invalid API Key.";
+    // Specific Error Handling
+    if (errString.includes('404') || errString.includes('not found')) {
+         return language === 'fa' 
+            ? "خطا: مدل هوش مصنوعی یافت نشد (404). ممکن است نام مدل تغییر کرده باشد." 
+            : "Error: AI Model not found (404).";
+    }
+    
+    if (errString.includes('400') || errString.includes('invalid argument')) {
+         return language === 'fa' 
+            ? "خطا: درخواست نامعتبر (400). لطفا داده‌های ورودی را بررسی کنید." 
+            : "Error: Invalid request (400). Check input data.";
     }
 
-    return errorMessage;
+    if (errString.includes('403') || errString.includes('permission') || errString.includes('key')) {
+        return language === 'fa' 
+            ? "خطا: کلید API نامعتبر است یا دسترسی ندارد." 
+            : "Error: Invalid API Key or permission denied.";
+    }
+
+    if (errString.includes('fetch') || errString.includes('network')) {
+        return language === 'fa'
+            ? "خطا در اتصال به اینترنت. لطفا اتصال خود را بررسی کنید (ممکن است نیاز به تغییر IP باشد)."
+            : "Network Error. Please check your internet connection.";
+    }
+    
+    // Fallback generic error
+    return language === 'fa'
+      ? `خطا در تحلیل: ${error.message || 'Unknown Error'}`
+      : `Analysis Error: ${error.message || 'Unknown Error'}`;
   }
 };

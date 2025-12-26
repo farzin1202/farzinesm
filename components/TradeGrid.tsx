@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useApp } from '../store';
-import { Trade, Direction, Result } from '../types';
-import { Trash2, Plus, Calendar, Hash, BarChart3 } from 'lucide-react';
+import { Trade } from '../types';
+import { Trash2, Plus, Calendar, Hash, BarChart3, ChevronUp, FileText, FileEdit } from 'lucide-react';
 import { TRANSLATIONS } from '../constants';
 
-const CellInput = ({ 
+const CellInput = memo(({ 
   value, 
   onChange, 
   type = 'text',
   className = '',
-  onBlur,
   placeholder = '',
   min,
   max
@@ -18,13 +18,13 @@ const CellInput = ({
   onChange: (val: any) => void, 
   type?: string,
   className?: string,
-  onBlur?: () => void,
   placeholder?: string,
   min?: string,
   max?: string
 }) => {
   const [localValue, setLocalValue] = useState(value);
 
+  // Sync local state when prop changes (external update)
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
@@ -33,7 +33,6 @@ const CellInput = ({
     if (localValue !== value) {
         onChange(localValue);
     }
-    if (onBlur) onBlur();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -52,21 +51,208 @@ const CellInput = ({
       placeholder={placeholder}
       min={min}
       max={max}
-      className={`w-full bg-transparent outline-none py-2.5 px-3 text-sm rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:shadow-sm transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 ${className}`}
+      className={`w-full bg-transparent outline-none py-2 px-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:shadow-sm transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 ${className}`}
     />
   );
-};
+});
+
+CellInput.displayName = 'CellInput';
+
+interface TradeRowProps {
+    trade: Trade;
+    isExpanded: boolean;
+    onToggleExpand: (id: string) => void;
+    onUpdate: (id: string, field: keyof Trade, value: any) => void;
+    onDelete: (id: string) => void;
+    t: any;
+}
+
+const TradeRow = memo(({ trade, isExpanded, onToggleExpand, onUpdate, onDelete, t }: TradeRowProps) => {
+    const isWin = trade.result === 'Win';
+    const isLoss = trade.result === 'Loss';
+    const colorClass = isWin ? 'text-emerald-600 dark:text-emerald-400' : isLoss ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500';
+    const hasNotes = trade.notes && trade.notes.trim().length > 0;
+
+    return (
+        <>
+            <tr className={`group hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors ${isExpanded ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''}`}>
+                {/* Index / Expand Toggle */}
+                <td className="text-center">
+                        <button 
+                        onClick={() => onToggleExpand(trade.id)}
+                        className={`p-1 rounded-md transition-colors ${hasNotes ? 'text-indigo-500' : 'text-slate-300 hover:text-indigo-500'}`}
+                        title={hasNotes ? "Has Notes" : "Add Notes"}
+                        >
+                        {isExpanded ? <ChevronUp size={14} /> : (
+                            hasNotes ? <FileText size={14} fill="currentColor" /> : <FileEdit size={14} />
+                        )}
+                        </button>
+                </td>
+
+                {/* Day Input */}
+                <td>
+                    <CellInput 
+                        value={trade.date} 
+                        onChange={(v) => onUpdate(trade.id, 'date', v)} 
+                        type="number" 
+                        min="1" max="31"
+                        className="font-mono font-medium text-slate-600 dark:text-slate-300 text-center" 
+                    />
+                </td>
+                
+                {/* Pair */}
+                <td><CellInput value={trade.pair} onChange={(v) => onUpdate(trade.id, 'pair', v)} className="uppercase font-bold tracking-wide text-slate-700 dark:text-slate-200" /></td>
+                
+                {/* Direction */}
+                <td>
+                    <div className="px-1">
+                            <select
+                            value={trade.direction}
+                            onChange={(e) => onUpdate(trade.id, 'direction', e.target.value)}
+                            className={`w-full py-1.5 px-2 rounded-lg text-xs font-bold outline-none cursor-pointer border-0 transition-all shadow-sm
+                                ${trade.direction === 'Long' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : ''}
+                                ${trade.direction === 'Short' ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400' : ''}
+                            `}
+                        >
+                            <option value="Long">LONG</option>
+                            <option value="Short">SHORT</option>
+                        </select>
+                    </div>
+                </td>
+
+                {/* RR */}
+                <td><CellInput value={trade.rr} onChange={(v) => onUpdate(trade.id, 'rr', v)} type="number" className="font-mono font-medium" /></td>
+                
+                {/* Result */}
+                <td>
+                    <div className="px-1">
+                            <select
+                            value={trade.result}
+                            onChange={(e) => onUpdate(trade.id, 'result', e.target.value)}
+                            className={`w-full py-1.5 px-2 rounded-lg text-xs font-bold outline-none cursor-pointer border-0 transition-all shadow-sm
+                                ${isWin ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : ''}
+                                ${isLoss ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400' : ''}
+                                ${trade.result === 'BE' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' : ''}
+                            `}
+                        >
+                            <option value="Win">WIN</option>
+                            <option value="Loss">LOSS</option>
+                            <option value="BE">BE</option>
+                        </select>
+                    </div>
+                </td>
+
+                {/* Pips */}
+                <td><CellInput value={trade.pips} onChange={(v) => onUpdate(trade.id, 'pips', v)} type="number" className={`font-mono font-medium ${colorClass}`} /></td>
+                
+                {/* PnL Percent */}
+                <td><CellInput value={trade.pnlPercent} onChange={(v) => onUpdate(trade.id, 'pnlPercent', v)} type="number" className={`font-mono font-bold ${colorClass}`} /></td>
+
+                {/* Max Excursion % */}
+                <td>
+                    {isWin ? (
+                        <CellInput 
+                            value={trade.maxExcursionPercent || 0} 
+                            onChange={(v) => onUpdate(trade.id, 'maxExcursionPercent', v)} 
+                            type="number" 
+                            className="font-mono text-slate-400 dark:text-slate-500 text-xs" 
+                            placeholder="Max %"
+                        />
+                    ) : (
+                        <div className="px-2 text-center text-slate-300 dark:text-slate-700">-</div>
+                    )}
+                </td>
+
+                <td className="text-center pr-2">
+                    <button 
+                        onClick={() => onDelete(trade.id)}
+                        className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                        <Trash2 size={15} strokeWidth={1.5} />
+                    </button>
+                </td>
+            </tr>
+            
+            {/* Expanded Row for Notes */}
+            {isExpanded && (
+                <tr className="bg-slate-50/50 dark:bg-slate-900/50 animate-in fade-in duration-200">
+                    <td colSpan={10} className="p-0 border-b border-slate-100 dark:border-slate-800">
+                        <div className="p-4 pl-12">
+                            <div className="relative">
+                                <div className="absolute left-3 top-3 text-slate-400">
+                                    <FileText size={16} />
+                                </div>
+                                <textarea 
+                                    value={trade.notes || ''}
+                                    onChange={(e) => onUpdate(trade.id, 'notes', e.target.value)}
+                                    placeholder={t.notesPlaceholder}
+                                    className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 pl-10 text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all min-h-[80px]"
+                                />
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            )}
+        </>
+    );
+}, (prev, next) => {
+    // Custom comparison to avoid re-renders if trade data hasn't changed
+    // We only re-render if the specific trade object changed reference or expansion state changed
+    return prev.trade === next.trade && prev.isExpanded === next.isExpanded;
+});
+
+TradeRow.displayName = 'TradeRow';
 
 export const TradeGrid: React.FC<{ trades: Trade[] }> = ({ trades }) => {
   const { state, dispatch } = useApp();
+  const [expandedTradeIds, setExpandedTradeIds] = useState<Set<string>>(new Set());
   const t = TRANSLATIONS[state.settings.language];
 
-  const updateTrade = (id: string, field: keyof Trade, value: any) => {
-    let updates: Partial<Trade> = { [field]: value };
-    const trade = trades.find(t => t.id === id);
-    if (!trade) return;
+  const toggleExpand = useCallback((id: string) => {
+    setExpandedTradeIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
 
-    if (['rr', 'pips', 'pnlPercent', 'maxExcursionPercent'].includes(field)) {
+  const updateTrade = useCallback((id: string, field: keyof Trade, value: any) => {
+    // We need to access the trade data to perform logic, but 'trades' prop changes often.
+    // Instead of depending on 'trades' inside useCallback (which kills memoization),
+    // we compute the update payload and dispatch. The Reducer handles the update, 
+    // and the new 'trade' object flows down to the specific TradeRow.
+    
+    // NOTE: For complex logic like the sign flipping, strictly speaking, we need the current trade state.
+    // To keep it performant, we trust the TradeRow passed the current trade values or we use a "functional" update approach
+    // in the reducer, BUT here we are inside the component. 
+    // Optimization: We will do a quick lookup in the `trades` prop. It technically adds `trades` to dep array,
+    // but since we are memoizing TradeRow, only the row that changed will re-render.
+    
+    // However, to avoid 'trades' dependency in useCallback, we can move the "Business Logic" of flipping signs
+    // into the Reducer. But for now, let's keep it simple and efficient enough.
+    
+    dispatch({ type: 'UPDATE_TRADE', payload: { id, data: { [field]: value } } });
+    
+    // If strict logic is needed (like the sign flipping), we can do it here, but it requires 'trades' dependency.
+    // Let's implement the sign logic here for correctness, accepting `trades` dependency. 
+    // React.memo on TradeRow protects other rows.
+  }, [dispatch]); // We removed 'trades' from dependency. We will handle logic inside Reducer or accept simple updates here.
+                  // *Correction*: The prompt asked to fix errors/logic. The previous logic for auto-sign flipping was in the component.
+                  // To restore that behavior efficiently without breaking memoization:
+                  // We can pass the logic to the child, OR implement a specialized Action in Reducer.
+                  // Let's implement the smarter update in this wrapper function, but access the trade from the list.
+
+  const handleUpdateSmart = useCallback((id: string, field: keyof Trade, value: any) => {
+      const trade = trades.find(t => t.id === id);
+      if (!trade) return;
+
+      let updates: Partial<Trade> = { [field]: value };
+
+      if (['rr', 'pips', 'pnlPercent', 'maxExcursionPercent'].includes(field)) {
         let numValue = parseFloat(value);
         if (isNaN(numValue)) numValue = 0;
         
@@ -82,27 +268,24 @@ export const TradeGrid: React.FC<{ trades: Trade[] }> = ({ trades }) => {
     }
 
     if (field === 'result') {
-        // When changing result, flip signs of existing values
         const isWin = value === 'Win';
         const isLoss = value === 'Loss';
-        
         const flip = (val: number) => {
             if (isWin) return Math.abs(val);
             if (isLoss) return -Math.abs(val);
-            return 0; // BE
+            return 0; 
         }
-
         updates.pips = flip(trade.pips);
         updates.pnlPercent = flip(trade.pnlPercent);
-        
-        // Reset Max Excursion if not Win
-        if (!isWin) {
-            updates.maxExcursionPercent = 0;
-        }
+        if (!isWin) updates.maxExcursionPercent = 0;
     }
 
     dispatch({ type: 'UPDATE_TRADE', payload: { id, data: updates } });
-  };
+  }, [trades, dispatch]);
+
+  const handleDelete = useCallback((id: string) => {
+      dispatch({ type: 'DELETE_TRADE', payload: id });
+  }, [dispatch]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -138,109 +321,30 @@ export const TradeGrid: React.FC<{ trades: Trade[] }> = ({ trades }) => {
                 <table className="w-full min-w-[900px] text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/50 dark:bg-slate-950/30 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                            <th className="w-20 px-3 py-4">{t.day}</th>
-                            <th className="w-32 px-3">{t.pair}</th>
-                            <th className="w-24 px-3">{t.dir}</th>
-                            <th className="w-20 px-3">{t.rr}</th>
-                            <th className="w-28 px-3">{t.result}</th>
-                            <th className="w-28 px-3">{t.pips}</th>
-                            <th className="w-28 px-3">{t.pnl}</th>
-                            <th className="w-28 px-3">{t.maxExcursion}</th>
-                            <th className="w-14 text-center"></th>
+                            <th className="w-12 px-2 py-4 text-center">#</th>
+                            <th className="w-16 px-2">{t.day}</th>
+                            <th className="w-28 px-2">{t.pair}</th>
+                            <th className="w-24 px-2">{t.dir}</th>
+                            <th className="w-20 px-2">{t.rr}</th>
+                            <th className="w-28 px-2">{t.result}</th>
+                            <th className="w-24 px-2">{t.pips}</th>
+                            <th className="w-24 px-2">{t.pnl}</th>
+                            <th className="w-24 px-2">{t.maxExcursion}</th>
+                            <th className="w-20 text-center">{t.actions}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                        {trades.map((trade, idx) => {
-                            const isWin = trade.result === 'Win';
-                            const isLoss = trade.result === 'Loss';
-                            const colorClass = isWin ? 'text-emerald-600 dark:text-emerald-400' : isLoss ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500';
-
-                            return (
-                            <tr key={trade.id} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
-                                {/* Day Input */}
-                                <td>
-                                    <CellInput 
-                                        value={trade.date} 
-                                        onChange={(v) => updateTrade(trade.id, 'date', v)} 
-                                        type="number" 
-                                        min="1" max="31"
-                                        className="font-mono font-medium text-slate-600 dark:text-slate-300 text-center" 
-                                    />
-                                </td>
-                                
-                                {/* Pair - Auto filled in store, but editable */}
-                                <td><CellInput value={trade.pair} onChange={(v) => updateTrade(trade.id, 'pair', v)} className="uppercase font-bold tracking-wide text-slate-700 dark:text-slate-200" /></td>
-                                
-                                {/* Direction - Colored */}
-                                <td>
-                                    <div className="px-3">
-                                         <select
-                                            value={trade.direction}
-                                            onChange={(e) => updateTrade(trade.id, 'direction', e.target.value)}
-                                            className={`w-full py-1.5 px-3 rounded-lg text-xs font-bold outline-none cursor-pointer border-0 transition-all shadow-sm
-                                                ${trade.direction === 'Long' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : ''}
-                                                ${trade.direction === 'Short' ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400' : ''}
-                                            `}
-                                        >
-                                            <option value="Long">LONG</option>
-                                            <option value="Short">SHORT</option>
-                                        </select>
-                                    </div>
-                                </td>
-
-                                {/* RR */}
-                                <td><CellInput value={trade.rr} onChange={(v) => updateTrade(trade.id, 'rr', v)} type="number" className="font-mono font-medium" /></td>
-                                
-                                {/* Result */}
-                                <td>
-                                    <div className="px-3">
-                                         <select
-                                            value={trade.result}
-                                            onChange={(e) => updateTrade(trade.id, 'result', e.target.value)}
-                                            className={`w-full py-1.5 px-3 rounded-lg text-xs font-bold outline-none cursor-pointer border-0 transition-all shadow-sm
-                                                ${isWin ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : ''}
-                                                ${isLoss ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400' : ''}
-                                                ${trade.result === 'BE' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' : ''}
-                                            `}
-                                        >
-                                            <option value="Win">WIN</option>
-                                            <option value="Loss">LOSS</option>
-                                            <option value="BE">BE</option>
-                                        </select>
-                                    </div>
-                                </td>
-
-                                {/* Pips */}
-                                <td><CellInput value={trade.pips} onChange={(v) => updateTrade(trade.id, 'pips', v)} type="number" className={`font-mono font-medium ${colorClass}`} /></td>
-                                
-                                {/* PnL Percent */}
-                                <td><CellInput value={trade.pnlPercent} onChange={(v) => updateTrade(trade.id, 'pnlPercent', v)} type="number" className={`font-mono font-bold ${colorClass}`} /></td>
-
-                                {/* Max Excursion % - Only if Win */}
-                                <td>
-                                    {isWin ? (
-                                        <CellInput 
-                                            value={trade.maxExcursionPercent || 0} 
-                                            onChange={(v) => updateTrade(trade.id, 'maxExcursionPercent', v)} 
-                                            type="number" 
-                                            className="font-mono text-slate-400 dark:text-slate-500 text-xs" 
-                                            placeholder="Max %"
-                                        />
-                                    ) : (
-                                        <div className="px-3 text-center text-slate-300 dark:text-slate-700">-</div>
-                                    )}
-                                </td>
-
-                                <td className="text-center pr-4">
-                                    <button 
-                                        onClick={() => dispatch({ type: 'DELETE_TRADE', payload: trade.id })}
-                                        className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 opacity-0 group-hover:opacity-100 transition-all"
-                                    >
-                                        <Trash2 size={15} strokeWidth={1.5} />
-                                    </button>
-                                </td>
-                            </tr>
-                        )})}
+                        {trades.map((trade) => (
+                            <TradeRow 
+                                key={trade.id} 
+                                trade={trade} 
+                                isExpanded={expandedTradeIds.has(trade.id)} 
+                                onToggleExpand={toggleExpand}
+                                onUpdate={handleUpdateSmart}
+                                onDelete={handleDelete}
+                                t={t}
+                            />
+                        ))}
                     </tbody>
                 </table>
             </div>

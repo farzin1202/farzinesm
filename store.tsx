@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import { AppState, AppAction, Trade, Strategy, MonthData, User } from './types';
 import { INITIAL_STATE } from './constants';
 import { storageService } from './services/storageService';
@@ -13,14 +13,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'LOAD_STATE':
       return { 
         ...state,
+        user: action.payload.user,
         strategies: action.payload.strategies || [],
         settings: { ...state.settings, ...action.payload.settings }
       };
     
     case 'LOGIN':
+      // Legacy action, ideally should use LOAD_STATE to set everything
       return { ...state, user: action.payload };
     
     case 'LOGOUT':
+      storageService.clearSession();
       return { ...INITIAL_STATE, user: null };
 
     case 'UPDATE_USER':
@@ -199,18 +202,40 @@ const AppContext = createContext<{
 }>({ state: INITIAL_STATE, dispatch: () => null });
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize state from Storage Service
+  // Initialize state from Storage Service (which now handles session checks)
   const [state, dispatch] = useReducer(appReducer, INITIAL_STATE, (initial) => {
     return storageService.loadState() || initial;
   });
 
-  // Persistence Effect: Debounced save to storage
+  const stateRef = useRef(state);
+  
+  // Keep ref updated for event listeners
   useEffect(() => {
-    const handler = setTimeout(() => {
-        storageService.saveState(state);
-    }, 1000);
-    return () => clearTimeout(handler);
+    stateRef.current = state;
   }, [state]);
+
+  // Persistence Effect: Saves data to the *currently logged in user's* isolated storage
+  useEffect(() => {
+    if (state.user) {
+        // Debounce save for performance
+        const handler = setTimeout(() => {
+            storageService.saveState(state);
+        }, 1000);
+
+        return () => clearTimeout(handler);
+    }
+  }, [state]);
+
+  // Critical: Save on close/refresh to prevent data loss if debounce hasn't fired
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (stateRef.current.user) {
+        storageService.saveState(stateRef.current);
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   // Handle Theme Effect
   useEffect(() => {

@@ -35,6 +35,7 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string;
+  rememberMe?: boolean;
 }
 
 export interface AppState {
@@ -110,7 +111,6 @@ export interface Translations {
   analyzing: string;
   viewAnalysis: string;
   close: string;
-  signInGoogle: string;
   signOut: string;
   profile: string;
   theme: string;
@@ -122,4 +122,7 @@ export interface Translations {
   confirmDeleteStrategyMsg: string;
   confirmDeleteMonthMsg: string;
   confirmDeleteAction: string;
+  chooseAccount: string;
+  useAnotherAccount: string;
+  stayLoggedIn: string;
 }

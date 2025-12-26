@@ -67,7 +67,7 @@ export const MonthView: React.FC = () => {
             strategy, 
             month, 
             state.settings.apiKey,
-            state.settings.language
+            'fa' // Force Persian language as requested
         );
         
         dispatch({ 
