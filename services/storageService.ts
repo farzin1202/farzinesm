@@ -12,6 +12,7 @@ interface RegisteredUser {
   email: string;
   password?: string; // Optional for Google-auth simulated users
   avatarUrl?: string;
+  authProvider?: 'local' | 'google';
 }
 
 export const storageService = {
@@ -26,6 +27,39 @@ export const storageService = {
       console.error("Registry corrupted, resetting:", e);
       return [];
     }
+  },
+
+  /**
+   * Update User in Registry (Name, Password, etc)
+   */
+  updateUserRegistry: (userId: string, updates: Partial<RegisteredUser>): boolean => {
+    try {
+        const registry = storageService.getRegistry();
+        const index = registry.findIndex(u => u.id === userId);
+        
+        if (index !== -1) {
+            registry[index] = { ...registry[index], ...updates };
+            localStorage.setItem(USER_REGISTRY_KEY, JSON.stringify(registry));
+            return true;
+        }
+        return false;
+    } catch (e) {
+        console.error("Failed to update registry", e);
+        return false;
+    }
+  },
+
+  /**
+   * Verify password for a specific user ID
+   */
+  verifyPassword: (userId: string, passwordAttempt: string): boolean => {
+      const registry = storageService.getRegistry();
+      const user = registry.find(u => u.id === userId);
+      // specific check for local users
+      if (user && user.authProvider !== 'google' && user.password === passwordAttempt) {
+          return true;
+      }
+      return false;
   },
 
   /**

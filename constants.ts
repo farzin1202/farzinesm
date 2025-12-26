@@ -1,6 +1,10 @@
 
 import { Translations, AppState } from './types';
 
+// TODO: Replace this with your actual Google Client ID from Google Cloud Console
+// Example: "123456789-abcdefgh.apps.googleusercontent.com"
+export const GOOGLE_CLIENT_ID: string = ""; 
+
 export const INITIAL_STATE: AppState = {
   user: null,
   strategies: [],
@@ -10,11 +14,10 @@ export const INITIAL_STATE: AppState = {
     theme: 'dark',
     language: 'en',
     isOnboardingComplete: false,
-    apiKey: '',
   },
 };
 
-export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
+export const TRANSLATIONS: Record<'en' | 'fa', Translations & any> = {
   en: {
     welcomeTitle: "Welcome to FxAnalytics",
     welcomeSubtitle: "Track, Analyze, and Master your Strategies with professional precision.",
@@ -58,9 +61,6 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     profile: "Profile",
     theme: "Theme",
     language: "Language",
-    apiKeyLabel: "Gemini API Key",
-    apiKeyPlaceholder: "Paste your API key here...",
-    apiKeyHelp: "Required for AI Analysis features.",
     confirmDeleteTitle: "Are you sure?",
     confirmDeleteStrategyMsg: "This will permanently delete this strategy and all contained months and trades. This action cannot be undone.",
     confirmDeleteMonthMsg: "This will permanently delete this month and all recorded trades. This action cannot be undone.",
@@ -68,6 +68,16 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     chooseAccount: "Choose an account",
     useAnotherAccount: "Use another account",
     stayLoggedIn: "Stay logged in",
+    settings: "Settings",
+    account: "Account",
+    security: "Security",
+    changePassword: "Change Password",
+    currentPassword: "Current Password",
+    newPassword: "New Password",
+    update: "Update",
+    passwordUpdated: "Password updated successfully",
+    incorrectPassword: "Incorrect current password",
+    usernameUpdated: "Username updated successfully",
   },
   fa: {
     welcomeTitle: "به FxAnalytics خوش آمدید",
@@ -112,9 +122,6 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     profile: "پروفایل",
     theme: "تم",
     language: "زبان",
-    apiKeyLabel: "کلید API جمینای",
-    apiKeyPlaceholder: "کلید خود را اینجا وارد کنید...",
-    apiKeyHelp: "برای استفاده از تحلیل هوشمند الزامی است.",
     confirmDeleteTitle: "آیا مطمئن هستید؟",
     confirmDeleteStrategyMsg: "این عمل استراتژی و تمام ماه‌ها و معاملات آن را برای همیشه حذف می‌کند. این عملیات غیرقابل بازگشت است.",
     confirmDeleteMonthMsg: "این عمل ماه و تمام معاملات ثبت شده در آن را حذف می‌کند. این عملیات غیرقابل بازگشت است.",
@@ -122,5 +129,15 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     chooseAccount: "انتخاب حساب کاربری",
     useAnotherAccount: "استفاده از حساب دیگر",
     stayLoggedIn: "مرا به خاطر بسپار",
+    settings: "تنظیمات",
+    account: "حساب کاربری",
+    security: "امنیت",
+    changePassword: "تغییر رمز عبور",
+    currentPassword: "رمز عبور فعلی",
+    newPassword: "رمز عبور جدید",
+    update: "بروزرسانی",
+    passwordUpdated: "رمز عبور با موفقیت تغییر کرد",
+    incorrectPassword: "رمز عبور فعلی اشتباه است",
+    usernameUpdated: "نام کاربری با موفقیت تغییر کرد",
   },
 };

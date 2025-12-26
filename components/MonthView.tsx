@@ -56,17 +56,14 @@ export const MonthView: React.FC = () => {
   };
 
   const handleAIAnalysis = async () => {
-    if (!state.settings.apiKey) {
-        alert(state.settings.language === 'fa' ? "لطفا ابتدا کلید API را در تنظیمات وارد کنید." : "Please enter API Key in settings first.");
-        return;
-    }
+    // Guidelines specify we assume API key is pre-configured in environment.
+    // No UI check for API key.
 
     setIsAnalyzing(true);
     try {
         const analysisText = await analyzeMonthPerformance(
             strategy, 
             month, 
-            state.settings.apiKey,
             'fa' // Force Persian language as requested
         );
         
@@ -282,20 +279,20 @@ export const MonthView: React.FC = () => {
                         </div>
                         <div>
                             <h3 className="text-base font-bold text-white">{t.aiAnalysis}</h3>
-                            <p className="text-xs text-indigo-200/70">{isAnalyzing ? t.analyzing : state.settings.apiKey ? "Ready to Analyze" : "Setup API Key"}</p>
+                            <p className="text-xs text-indigo-200/70">{isAnalyzing ? t.analyzing : "Ready to Analyze"}</p>
                         </div>
                      </div>
                      <button 
                         onClick={() => month.aiAnalysis ? setIsAnalysisModalOpen(true) : handleAIAnalysis()}
                         disabled={isAnalyzing}
-                        className={`text-xs bg-white text-indigo-900 px-4 py-2 rounded-xl font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 shadow-lg ${!state.settings.apiKey ? 'opacity-80' : ''}`}
+                        className={`text-xs bg-white text-indigo-900 px-4 py-2 rounded-xl font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 shadow-lg`}
                     >
                         {isAnalyzing ? (
                             <div className="w-4 h-4 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div>
                         ) : month.aiAnalysis ? (
                             t.viewAnalysis
                         ) : (
-                            state.settings.apiKey ? t.askAi : "Add Key"
+                            t.askAi
                         )}
                     </button>
                 </div>

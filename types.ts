@@ -47,7 +47,6 @@ export interface AppState {
     theme: 'light' | 'dark';
     language: 'en' | 'fa';
     isOnboardingComplete: boolean;
-    apiKey?: string;
   };
 }
 
@@ -57,7 +56,6 @@ export type AppAction =
   | { type: 'UPDATE_USER'; payload: Partial<User> }
   | { type: 'SET_THEME'; payload: 'light' | 'dark' }
   | { type: 'SET_LANGUAGE'; payload: 'en' | 'fa' }
-  | { type: 'SET_API_KEY'; payload: string }
   | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'ADD_STRATEGY'; payload: string }
   | { type: 'UPDATE_STRATEGY'; payload: { id: string; updates: Partial<Strategy> } }
@@ -115,9 +113,6 @@ export interface Translations {
   profile: string;
   theme: string;
   language: string;
-  apiKeyLabel: string;
-  apiKeyPlaceholder: string;
-  apiKeyHelp: string;
   confirmDeleteTitle: string;
   confirmDeleteStrategyMsg: string;
   confirmDeleteMonthMsg: string;

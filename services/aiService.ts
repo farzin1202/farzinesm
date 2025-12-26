@@ -5,14 +5,16 @@ import { MonthData, Strategy } from "../types";
 export const analyzeMonthPerformance = async (
   strategy: Strategy,
   month: MonthData,
-  apiKey?: string,
   language: 'en' | 'fa' = 'en'
 ): Promise<string> => {
   
+  // Use process.env.API_KEY directly as per @google/genai guidelines
+  const apiKey = process.env.API_KEY;
+
   if (!apiKey || apiKey.trim() === '') {
     return language === 'fa' 
-      ? "خطا: کلید API یافت نشد. لطفاً در بخش تنظیمات کلید API جمینای خود را وارد کنید."
-      : "Error: API Key missing. Please enter your Gemini API Key in the Settings menu.";
+      ? "خطا: کلید API یافت نشد. لطفاً مطمئن شوید متغیر محیطی API_KEY تنظیم شده است."
+      : "Error: API Key missing. Please ensure API_KEY environment variable is set.";
   }
 
   const tradesSummary = month.trades.map(t => 
@@ -46,14 +48,16 @@ export const analyzeMonthPerformance = async (
   `;
 
   try {
+    // Initialized directly with process.env.API_KEY
     const ai = new GoogleGenAI({ apiKey });
     
-    // Using gemini-2.0-flash for better stability and performance
+    // Updated to Gemini 3 Pro with Thinking Mode enabled
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-pro-preview',
       contents: userPrompt,
       config: {
-        systemInstruction: "You are an expert Forex Trading Mentor and Hedge Fund Portfolio Manager.",
+        thinkingConfig: { thinkingBudget: 32768 },
+        // Do not set maxOutputTokens when using thinking budget to allow full reasoning
       }
     });
 

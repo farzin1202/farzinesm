@@ -34,8 +34,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, settings: { ...state.settings, theme: action.payload } };
     case 'SET_LANGUAGE':
       return { ...state, settings: { ...state.settings, language: action.payload } };
-    case 'SET_API_KEY':
-      return { ...state, settings: { ...state.settings, apiKey: action.payload } };
     case 'COMPLETE_ONBOARDING':
       return { ...state, settings: { ...state.settings, isOnboardingComplete: true } };
     
