@@ -2,7 +2,7 @@
 import { AppState } from "../types";
 import { INITIAL_STATE } from "../constants";
 
-const STORAGE_KEY = 'tradeMaster_app_state_v1';
+const STORAGE_KEY = 'fxAnalytics_app_state_v1';
 
 export const storageService = {
   /**

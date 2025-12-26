@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Layout } from './components/ui/Layout';
 import { Onboarding } from './components/Onboarding';
 import { Auth } from './components/Auth';
@@ -8,21 +7,15 @@ import { MonthList } from './components/MonthList';
 import { MonthView } from './components/MonthView';
 import { AppProvider, useApp } from './store';
 
-// Inner component to access context
 const AppContent = () => {
   const { state } = useApp();
 
-  // Route Logic
-  // 1. Onboarding
-  // 2. Auth (if not logged in)
-  // 3. Main App
-  
   if (!state.settings.isOnboardingComplete) {
-      return <Onboarding />;
+    return <Onboarding />;
   }
 
   if (!state.user) {
-      return <Auth />;
+    return <Auth />;
   }
 
   let CurrentView;
@@ -41,12 +34,10 @@ const AppContent = () => {
   );
 };
 
-const App = () => {
-  return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
-  );
-};
+const App = () => (
+  <AppProvider>
+    <AppContent />
+  </AppProvider>
+);
 
 export default App;

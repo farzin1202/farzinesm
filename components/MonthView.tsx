@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../store';
-import { ArrowLeft, TrendingUp, TrendingDown, Activity, FileText, Sparkles, Medal, X, Wallet, DollarSign } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Activity, FileText, Sparkles, Medal, X, Wallet, DollarSign, Key } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { TRANSLATIONS } from '../constants';
 import { TradeGrid } from './TradeGrid';
@@ -14,7 +14,7 @@ const Sparkline = ({ data, color }: { data: any[], color: string }) => {
     
     return (
         <div style={{ width: '100%', height: '100%', minWidth: 10, minHeight: 10 }}>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={10} minHeight={10}>
                 <AreaChart data={data}>
                     <defs>
                         <linearGradient id={`gradient-${color}`} x1="0" y1="0" x2="0" y2="1">
@@ -56,9 +56,19 @@ export const MonthView: React.FC = () => {
   };
 
   const handleAIAnalysis = async () => {
+    if (!state.settings.apiKey) {
+        alert(state.settings.language === 'fa' ? "لطفا ابتدا کلید API را در تنظیمات وارد کنید." : "Please enter API Key in settings first.");
+        return;
+    }
+
     setIsAnalyzing(true);
     try {
-        const analysisText = await analyzeMonthPerformance(strategy, month);
+        const analysisText = await analyzeMonthPerformance(
+            strategy, 
+            month, 
+            state.settings.apiKey,
+            state.settings.language
+        );
         
         dispatch({ 
             type: 'UPDATE_MONTH', 
@@ -72,7 +82,7 @@ export const MonthView: React.FC = () => {
 
     } catch (error) {
         console.error("AI Analysis failed", error);
-        alert("Analysis failed. Please try again.");
+        alert("Analysis failed. Please check console.");
     } finally {
         setIsAnalyzing(false);
     }
@@ -272,20 +282,20 @@ export const MonthView: React.FC = () => {
                         </div>
                         <div>
                             <h3 className="text-base font-bold text-white">{t.aiAnalysis}</h3>
-                            <p className="text-xs text-indigo-200/70">{isAnalyzing ? t.analyzing : "Powered by Farzin Esmaeli"}</p>
+                            <p className="text-xs text-indigo-200/70">{isAnalyzing ? t.analyzing : state.settings.apiKey ? "Ready to Analyze" : "Setup API Key"}</p>
                         </div>
                      </div>
                      <button 
                         onClick={() => month.aiAnalysis ? setIsAnalysisModalOpen(true) : handleAIAnalysis()}
                         disabled={isAnalyzing}
-                        className="text-xs bg-white text-indigo-900 px-4 py-2 rounded-xl font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 shadow-lg"
+                        className={`text-xs bg-white text-indigo-900 px-4 py-2 rounded-xl font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 shadow-lg ${!state.settings.apiKey ? 'opacity-80' : ''}`}
                     >
                         {isAnalyzing ? (
                             <div className="w-4 h-4 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div>
                         ) : month.aiAnalysis ? (
                             t.viewAnalysis
                         ) : (
-                            t.askAi
+                            state.settings.apiKey ? t.askAi : "Add Key"
                         )}
                     </button>
                 </div>

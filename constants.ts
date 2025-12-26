@@ -10,12 +10,13 @@ export const INITIAL_STATE: AppState = {
     theme: 'dark',
     language: 'en',
     isOnboardingComplete: false,
+    apiKey: '',
   },
 };
 
 export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
   en: {
-    welcomeTitle: "Welcome to TradeMaster",
+    welcomeTitle: "Welcome to FxAnalytics",
     welcomeSubtitle: "Track, Analyze, and Master your Strategies with professional precision.",
     getStarted: "Get Started",
     strategies: "Strategies",
@@ -57,10 +58,13 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     signOut: "Sign Out",
     profile: "Profile",
     theme: "Theme",
-    language: "Language"
+    language: "Language",
+    apiKeyLabel: "Gemini API Key",
+    apiKeyPlaceholder: "Paste your API key here...",
+    apiKeyHelp: "Required for AI Analysis features."
   },
   fa: {
-    welcomeTitle: "به ترید مستر خوش آمدید",
+    welcomeTitle: "به FxAnalytics خوش آمدید",
     welcomeSubtitle: "استراتژی‌های خود را با دقت حرفه‌ای ردیابی، تحلیل و مسلط شوید.",
     getStarted: "شروع کنید",
     strategies: "استراتژی‌ها",
@@ -102,6 +106,9 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     signOut: "خروج",
     profile: "پروفایل",
     theme: "تم",
-    language: "زبان"
+    language: "زبان",
+    apiKeyLabel: "کلید API جمینای",
+    apiKeyPlaceholder: "کلید خود را اینجا وارد کنید...",
+    apiKeyHelp: "برای استفاده از تحلیل هوشمند الزامی است."
   },
 };

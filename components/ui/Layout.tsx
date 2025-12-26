@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../store';
-import { Moon, Sun, Globe, LogOut, User as UserIcon, Settings, ChevronDown, PenLine, Check } from 'lucide-react';
+import { Moon, Sun, Globe, LogOut, User as UserIcon, Settings, ChevronDown, PenLine, Check, Key } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -43,6 +43,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     }
   };
 
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({ type: 'SET_API_KEY', payload: e.target.value });
+  };
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,9 +68,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shadow-indigo-500/20 shadow-lg">
-              <span className="text-white font-bold text-base">T</span>
+              <span className="text-white font-bold text-base">F</span>
             </div>
-            <span className="font-semibold text-lg tracking-tight hidden sm:block text-slate-800 dark:text-slate-100">TradeMaster</span>
+            <span className="font-semibold text-lg tracking-tight hidden sm:block text-slate-800 dark:text-slate-100">FxAnalytics</span>
           </div>
 
           <div className="relative" ref={menuRef}>
@@ -90,7 +94,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             {/* Dropdown Menu */}
             {isMenuOpen && (
-                <div className={`absolute top-full mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${isRtl ? 'left-0' : 'right-0'}`}>
+                <div className={`absolute top-full mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${isRtl ? 'left-0' : 'right-0'}`}>
                     <div className="p-4 border-b border-slate-100 dark:border-slate-800">
                         {isEditingProfile ? (
                             <div className="flex items-center gap-2">
@@ -126,6 +130,23 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     </div>
                     
                     <div className="p-2 space-y-1">
+                        <div className="px-3 py-2">
+                             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block flex items-center gap-1.5">
+                                <Key size={12} />
+                                {t.apiKeyLabel}
+                             </label>
+                             <input 
+                                type="password"
+                                value={state.settings.apiKey || ''}
+                                onChange={handleApiKeyChange}
+                                placeholder={t.apiKeyPlaceholder}
+                                className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/50 text-slate-900 dark:text-white placeholder:text-slate-400"
+                             />
+                             <p className="text-[10px] text-slate-400 mt-1">{t.apiKeyHelp}</p>
+                        </div>
+
+                        <div className="h-px bg-slate-100 dark:bg-slate-800 mx-2 my-1"></div>
+
                         <button onClick={toggleTheme} className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm text-slate-600 dark:text-slate-300">
                             <div className="flex items-center gap-3">
                                 {state.settings.theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
