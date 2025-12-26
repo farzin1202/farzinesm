@@ -10,9 +10,11 @@ interface RegisteredUser {
   id: string;
   name: string;
   email: string;
-  password?: string; // Optional for Google-auth simulated users
+  password?: string;
   avatarUrl?: string;
   authProvider?: 'local' | 'google';
+  resetCode?: string;
+  resetCodeExpiry?: number;
 }
 
 export const storageService = {
@@ -59,6 +61,58 @@ export const storageService = {
       if (user && user.authProvider !== 'google' && user.password === passwordAttempt) {
           return true;
       }
+      return false;
+  },
+
+  /**
+   * Initiate Password Reset (Simulates sending email)
+   * Returns the code if successful (for UI simulation), null if email not found
+   */
+  initiatePasswordReset: (email: string): string | null => {
+      const registry = storageService.getRegistry();
+      const index = registry.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+      
+      if (index === -1) return null;
+
+      // Generate 6 digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Save code and expiry (10 mins)
+      registry[index].resetCode = code;
+      registry[index].resetCodeExpiry = Date.now() + 10 * 60 * 1000;
+      
+      localStorage.setItem(USER_REGISTRY_KEY, JSON.stringify(registry));
+      
+      return code;
+  },
+
+  /**
+   * Verify Code and Reset Password
+   */
+  completePasswordReset: (email: string, code: string, newPassword: string): boolean => {
+      const registry = storageService.getRegistry();
+      const index = registry.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+
+      if (index === -1) return false;
+
+      const user = registry[index];
+
+      // Check code existence, equality and expiry
+      if (
+          user.resetCode && 
+          user.resetCode === code && 
+          user.resetCodeExpiry && 
+          user.resetCodeExpiry > Date.now()
+      ) {
+          // Success: Update password and clear reset code
+          registry[index].password = newPassword;
+          registry[index].resetCode = undefined;
+          registry[index].resetCodeExpiry = undefined;
+          
+          localStorage.setItem(USER_REGISTRY_KEY, JSON.stringify(registry));
+          return true;
+      }
+
       return false;
   },
 

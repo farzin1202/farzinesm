@@ -1,10 +1,6 @@
 
 import { Translations, AppState } from './types';
 
-// TODO: Replace this with your actual Google Client ID from Google Cloud Console
-// Example: "123456789-abcdefgh.apps.googleusercontent.com"
-export const GOOGLE_CLIENT_ID: string = ""; 
-
 export const INITIAL_STATE: AppState = {
   user: null,
   strategies: [],
@@ -78,6 +74,16 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations & any> = {
     passwordUpdated: "Password updated successfully",
     incorrectPassword: "Incorrect current password",
     usernameUpdated: "Username updated successfully",
+    forgotPassword: "Forgot Password?",
+    sendCode: "Send Reset Code",
+    enterCode: "Enter Code",
+    verificationCode: "Verification Code",
+    resetPassword: "Reset Password",
+    backToLogin: "Back to Login",
+    codeSentMsg: "Verification code sent to your email.",
+    resetSuccessMsg: "Password reset successfully. Please login.",
+    emailNotFound: "Email not found.",
+    invalidCode: "Invalid or expired code.",
   },
   fa: {
     welcomeTitle: "به FxAnalytics خوش آمدید",
@@ -139,5 +145,15 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations & any> = {
     passwordUpdated: "رمز عبور با موفقیت تغییر کرد",
     incorrectPassword: "رمز عبور فعلی اشتباه است",
     usernameUpdated: "نام کاربری با موفقیت تغییر کرد",
+    forgotPassword: "رمز عبور را فراموش کردید؟",
+    sendCode: "ارسال کد تایید",
+    enterCode: "کد تایید",
+    verificationCode: "کد ۶ رقمی",
+    resetPassword: "تغییر رمز عبور",
+    backToLogin: "بازگشت به ورود",
+    codeSentMsg: "کد تایید به ایمیل شما ارسال شد.",
+    resetSuccessMsg: "رمز عبور با موفقیت تغییر کرد. لطفا وارد شوید.",
+    emailNotFound: "ایمیل یافت نشد.",
+    invalidCode: "کد نامعتبر یا منقضی شده است.",
   },
 };
