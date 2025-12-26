@@ -21,9 +21,9 @@ export const Auth: React.FC = () => {
   
   const t = TRANSLATIONS[state.settings.language];
 
-  // --- Real OAuth Logic ---
+  // --- Real & Mock OAuth Logic ---
 
-  // 1. Handle OAuth Redirect Callback
+  // 1. Handle OAuth Redirect Callback (Works for both Real Google & Mock Redirect)
   useEffect(() => {
     const handleOAuthCallback = async () => {
         const hash = window.location.hash;
@@ -39,23 +39,37 @@ export const Auth: React.FC = () => {
                 // Clear hash to clean up URL
                 window.history.replaceState(null, '', window.location.pathname);
 
-                // Fetch User Info from Google
-                const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
-                
-                if (!response.ok) throw new Error("Failed to fetch user info");
-                
-                const googleData = await response.json();
-                
-                // Construct User Object
-                const googleUser = {
-                    id: `google-${googleData.sub}`, // Ensure unique ID prefix
-                    name: googleData.name,
-                    email: googleData.email,
-                    avatarUrl: googleData.picture,
-                    authProvider: 'google' as const
-                };
+                let googleUser;
+
+                // CHECK: Is this a Real token or a Mock token?
+                if (accessToken === 'mock_demo_token') {
+                    // --- MOCK FLOW (Simulated) ---
+                    await new Promise(r => setTimeout(r, 800)); // Simulate network fetch
+                    googleUser = {
+                        id: `google-demo-user`,
+                        name: 'Demo Google User',
+                        email: 'demo@gmail.com',
+                        avatarUrl: 'https://ui-avatars.com/api/?name=Google+User&background=4285F4&color=fff', 
+                        authProvider: 'google' as const
+                    };
+                } else {
+                    // --- REAL FLOW (Google API) ---
+                    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                        headers: { Authorization: `Bearer ${accessToken}` }
+                    });
+                    
+                    if (!response.ok) throw new Error("Failed to fetch user info");
+                    
+                    const googleData = await response.json();
+                    
+                    googleUser = {
+                        id: `google-${googleData.sub}`,
+                        name: googleData.name,
+                        email: googleData.email,
+                        avatarUrl: googleData.picture,
+                        authProvider: 'google' as const
+                    };
+                }
 
                 // Register or Login Logic
                 const registry = storageService.getRegistry();
@@ -76,14 +90,14 @@ export const Auth: React.FC = () => {
                    // Update avatar/name if changed on Google side
                    userState.user = { 
                        ...existing, 
-                       name: googleData.name, 
-                       avatarUrl: googleData.picture, 
+                       name: googleUser.name, 
+                       avatarUrl: googleUser.avatarUrl, 
                        rememberMe: true 
                    };
                    // Update registry with latest info
                    storageService.updateUserRegistry(existing.id, { 
-                       name: googleData.name, 
-                       avatarUrl: googleData.picture 
+                       name: googleUser.name, 
+                       avatarUrl: googleUser.avatarUrl 
                    });
                 }
 
@@ -104,17 +118,23 @@ export const Auth: React.FC = () => {
   // 2. Initiate OAuth Redirect
   const handleGoogleAuth = () => {
       setErrorMsg('');
+      setIsGoogleLoading(true);
 
+      // --- HYBRID CHECK ---
+      // If no Client ID is provided in constants.ts, use the Mock Redirect flow
+      // so the user can still test the "Experience" of OAuth.
       if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.trim() === '') {
-          // If no Client ID is configured, show a helpful message instead of crashing
-          alert(state.settings.language === 'fa' 
-            ? "تنظیمات OAuth کامل نیست. لطفا GOOGLE_CLIENT_ID را در فایل constants.ts مقداردهی کنید." 
-            : "OAuth configuration missing. Please set GOOGLE_CLIENT_ID in constants.ts to enable real Google Sign-In.");
+          console.warn("FxAnalytics: No GOOGLE_CLIENT_ID found. Using Mock OAuth Redirect Flow.");
+          
+          setTimeout(() => {
+              // Simulate a redirect by reloading page with a mock token hash
+              // This triggers the useEffect above just like a real Google redirect would.
+              window.location.hash = '#access_token=mock_demo_token&token_type=Bearer&expires_in=3600';
+          }, 1000);
           return;
       }
 
-      setIsGoogleLoading(true);
-
+      // --- REAL REDIRECT FLOW ---
       const redirectUri = window.location.origin;
       const scope = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
       const responseType = 'token'; // Implicit flow
