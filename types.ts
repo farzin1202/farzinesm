@@ -118,4 +118,8 @@ export interface Translations {
   apiKeyLabel: string;
   apiKeyPlaceholder: string;
   apiKeyHelp: string;
+  confirmDeleteTitle: string;
+  confirmDeleteStrategyMsg: string;
+  confirmDeleteMonthMsg: string;
+  confirmDeleteAction: string;
 }

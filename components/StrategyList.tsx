@@ -1,12 +1,15 @@
+
 import React, { useState } from 'react';
 import { useApp } from '../store';
-import { Plus, Trash2, Folder, ChevronRight, Zap } from 'lucide-react';
+import { Plus, Trash2, Folder, ChevronRight, Zap, AlertTriangle } from 'lucide-react';
 import { TRANSLATIONS } from '../constants';
 
 export const StrategyList: React.FC = () => {
   const { state, dispatch } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newStrategyName, setNewStrategyName] = useState('');
+  const [strategyToDelete, setStrategyToDelete] = useState<string | null>(null);
+  
   const t = TRANSLATIONS[state.settings.language];
   const isRtl = state.settings.language === 'fa';
 
@@ -15,6 +18,13 @@ export const StrategyList: React.FC = () => {
       dispatch({ type: 'ADD_STRATEGY', payload: newStrategyName });
       setNewStrategyName('');
       setIsModalOpen(false);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (strategyToDelete) {
+        dispatch({ type: 'DELETE_STRATEGY', payload: strategyToDelete });
+        setStrategyToDelete(null);
     }
   };
 
@@ -50,7 +60,7 @@ export const StrategyList: React.FC = () => {
                         <Folder size={20} strokeWidth={1.5} />
                     </div>
                     <button 
-                        onClick={(e) => { e.stopPropagation(); dispatch({ type: 'DELETE_STRATEGY', payload: strategy.id }); }}
+                        onClick={(e) => { e.stopPropagation(); setStrategyToDelete(strategy.id); }}
                         className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                     >
                         <Trash2 size={16} strokeWidth={1.5} />
@@ -85,7 +95,7 @@ export const StrategyList: React.FC = () => {
         )}
       </div>
 
-      {/* Modern Modal */}
+      {/* Add Strategy Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-950 p-8 rounded-3xl w-full max-w-sm shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800 scale-100 animate-in zoom-in-95 duration-200">
@@ -115,6 +125,36 @@ export const StrategyList: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {strategyToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-950 p-6 rounded-3xl w-full max-w-sm shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800 scale-100 animate-in zoom-in-95 duration-200">
+                <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/20 flex items-center justify-center mb-4 text-rose-600 dark:text-rose-400">
+                    <AlertTriangle size={24} />
+                </div>
+                <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">{t.confirmDeleteTitle}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                    {t.confirmDeleteStrategyMsg}
+                </p>
+                <div className="flex justify-end gap-3">
+                    <button 
+                        onClick={() => setStrategyToDelete(null)}
+                        className="px-4 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium transition-colors text-sm"
+                    >
+                        {t.cancel}
+                    </button>
+                    <button 
+                        onClick={confirmDelete}
+                        className="px-4 py-2 bg-rose-600 text-white rounded-xl hover:bg-rose-700 font-medium shadow-lg shadow-rose-500/25 transition-all text-sm"
+                    >
+                        {t.confirmDeleteAction}
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
     </div>
   );
 };

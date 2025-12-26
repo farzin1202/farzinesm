@@ -61,7 +61,11 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     language: "Language",
     apiKeyLabel: "Gemini API Key",
     apiKeyPlaceholder: "Paste your API key here...",
-    apiKeyHelp: "Required for AI Analysis features."
+    apiKeyHelp: "Required for AI Analysis features.",
+    confirmDeleteTitle: "Are you sure?",
+    confirmDeleteStrategyMsg: "This will permanently delete this strategy and all contained months and trades. This action cannot be undone.",
+    confirmDeleteMonthMsg: "This will permanently delete this month and all recorded trades. This action cannot be undone.",
+    confirmDeleteAction: "Yes, Delete",
   },
   fa: {
     welcomeTitle: "به FxAnalytics خوش آمدید",
@@ -109,6 +113,10 @@ export const TRANSLATIONS: Record<'en' | 'fa', Translations> = {
     language: "زبان",
     apiKeyLabel: "کلید API جمینای",
     apiKeyPlaceholder: "کلید خود را اینجا وارد کنید...",
-    apiKeyHelp: "برای استفاده از تحلیل هوشمند الزامی است."
+    apiKeyHelp: "برای استفاده از تحلیل هوشمند الزامی است.",
+    confirmDeleteTitle: "آیا مطمئن هستید؟",
+    confirmDeleteStrategyMsg: "این عمل استراتژی و تمام ماه‌ها و معاملات آن را برای همیشه حذف می‌کند. این عملیات غیرقابل بازگشت است.",
+    confirmDeleteMonthMsg: "این عمل ماه و تمام معاملات ثبت شده در آن را حذف می‌کند. این عملیات غیرقابل بازگشت است.",
+    confirmDeleteAction: "بله، حذف کن",
   },
 };
